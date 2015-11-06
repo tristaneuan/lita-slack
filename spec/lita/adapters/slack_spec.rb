@@ -27,6 +27,34 @@ describe Lita::Adapters::Slack, lita: true do
     end
   end
 
+  describe "#join" do
+    let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+    before do
+      allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      allow(api).to receive(:join).and_return(Hash.new)
+    end
+
+    it "joins a room" do
+      expect(api).to receive(:join).with('#general')
+      subject.join('#general')
+    end
+  end
+
+  describe "#part" do
+    let(:api) { instance_double('Lita::Adapters::Slack::API') }
+
+    before do
+      allow(Lita::Adapters::Slack::API).to receive(:new).with(subject.config).and_return(api)
+      allow(api).to receive(:part).and_return(Hash.new)
+    end
+
+    it "leaves a room" do
+      expect(api).to receive(:part).with("#general")
+      subject.part('#general')
+    end
+  end
+
   describe "#run" do
     it "starts the RTM connection" do
       expect(rtm_connection).to receive(:run)

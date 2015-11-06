@@ -66,6 +66,72 @@ describe Lita::Adapters::Slack::API do
     end
   end
 
+  describe "#join" do
+    let(:channel) { '#general' }
+    let(:stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.post(
+          'https://slack.com/api/channels.join',
+          token: token,
+          name: channel
+        ) do
+          [http_status, {}, http_response]
+        end
+      end
+    end
+    let(:http_response) do
+      MultiJson.dump({
+        ok: true,
+        channel: { name: 'general' }
+      })
+    end
+
+    it "returns a response with the channel's name" do
+      response = subject.join(channel)
+
+      expect(response['channel']['name']).to eq('general')
+    end
+  end
+
+  describe "#part" do
+    let(:channel_name) { '#general' }
+    let(:channel_id) { 'C1234567890' }
+    let(:stubs) do
+      Faraday::Adapter::Test::Stubs.new do |stub|
+        stub.post(
+          'https://slack.com/api/channels.list',
+          token: token
+        ) do
+          [http_status, {}, http_response_list]
+        end
+        stub.post(
+          'https://slack.com/api/channels.leave',
+          token: token,
+          channel: channel_id
+        ) do
+          [http_status, {}, http_response_leave]
+        end
+      end
+    end
+    let(:http_response_list) do
+      MultiJson.dump({
+        ok: true,
+        channels: [{ id: 'C1234567890', name: 'general' }]
+      })
+    end
+    let(:http_response_leave) do
+      MultiJson.dump({
+        ok: true
+      })
+    end
+
+    it "returns a response confirming the bot has left" do
+      response = subject.part(channel_name)
+
+      expect(response['ok']).to be true
+    end
+  end
+
   describe "#send_attachments" do
     let(:attachment) do
       Lita::Adapters::Slack::Attachment.new(attachment_text)

@@ -76,7 +76,7 @@ module Lita
 
         def channel_id(name)
           channels = call_api("channels.list")
-          matches = channels["channels"].select{ |c| c["name"] == room_id }
+          matches = channels["channels"].select{ |c| c["name"] == name.tr("#", "") }
           return if matches.empty?
           matches.first["id"]
         end
