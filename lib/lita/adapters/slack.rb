@@ -10,9 +10,26 @@ module Lita
       config :token, type: String, required: true
       config :proxy, type: String
 
+      attr_reader :api
+
+      def initialize(robot)
+        super
+        @api = API.new(config)
+      end
+
       # Provides an object for Slack-specific features.
       def chat_service
         ChatService.new(config)
+      end
+
+      def join(room_id)
+        Lita.logger.debug("Joining #{room_id}")
+        api.join(room_id)
+      end
+
+      def part(room_id)
+        Lita.logger.debug("Leaving #{room_id}")
+        api.part(room_id)
       end
 
       # Starts the connection.
@@ -32,7 +49,7 @@ module Lita
       def set_topic(target, topic)
         channel = target.room
         Lita.logger.debug("Setting topic for channel #{channel}: #{topic}")
-        API.new(config).set_topic(channel, topic)
+        api.set_topic(channel, topic)
       end
 
       def shut_down

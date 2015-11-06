@@ -21,6 +21,15 @@ module Lita
           SlackIM.new(response_data["channel"]["id"], user_id)
         end
 
+        def join(room_id)
+          call_api("channels.join", name: room_id)
+        end
+
+        def part(room_id)
+          channel = channel_id(room_id)
+          call_api("channels.leave", channel: channel) unless channel.nil?
+        end
+
         def send_attachments(room_or_user, attachments)
           call_api(
             "chat.postMessage",
@@ -63,6 +72,13 @@ module Lita
           raise "Slack API call to #{method} returned an error: #{data["error"]}." if data["error"]
 
           data
+        end
+
+        def channel_id(name)
+          channels = call_api("channels.list")
+          matches = channels["channels"].select{ |c| c["name"] == room_id }
+          return if matches.empty?
+          matches.first["id"]
         end
 
         def connection
